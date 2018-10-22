@@ -1,21 +1,18 @@
 package com.ccfs.daos
 
+import com.ccfs.Main
 import com.ccfs.model.UserModel.{MixItem, User, UserFavorite, UserMix}
 import org.slf4j.{Logger, LoggerFactory}
-import slick.basic.DatabaseConfig
-import slick.jdbc.JdbcProfile
-
-import scala.concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
-object UserDAO extends DatabaseConfig[JdbcProfile] {
+object UserDAO {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  import profile.api._
-
+  import Main.dbConfig.profile.api._
 
   private[daos] class Users(tag: Tag) extends Table[User](tag, "FreestyleUser") {
 
@@ -72,13 +69,13 @@ object UserDAO extends DatabaseConfig[JdbcProfile] {
 
   def selectMixItems(mixIds: Seq[Int]): DBIO[Seq[Seq[MixItem]]] = DBIO.sequence(mixIds.map(selectMixItem))
 
-  def getFavorites(userId: Int): Future[Seq[Int]] = {
+  def getFavorites(db: Database, userId: Int): Future[Seq[Int]] = {
     val q = userFavorites.filter(_.userId === userId).sortBy(_.rank).result
     val action = q.map(s => s.map { case UserFavorite(_, bevId, _) => bevId })
     db.run(action)
   }
 
-  def getUserMixes(userId: Int): Future[Seq[(UserMix, Seq[MixItem])]] = {
+  def getUserMixes(db: Database, userId: Int): Future[Seq[(UserMix, Seq[MixItem])]] = {
     val action = for {
       mixes <- selectUserMixes(userId)
       mixIds = mixes.map(_.id)
@@ -87,9 +84,9 @@ object UserDAO extends DatabaseConfig[JdbcProfile] {
     db.run(action)
   }
 
-  def getUserSelections(userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
-    mixes <- getUserMixes(userId)
-    favs <- getFavorites(userId)
+  def getUserSelections(db: Database, userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
+    mixes <- getUserMixes(db, userId)
+    favs <- getFavorites(db, userId)
   } yield (mixes, favs)
 
 
