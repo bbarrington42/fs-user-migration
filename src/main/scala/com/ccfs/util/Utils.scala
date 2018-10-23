@@ -1,11 +1,14 @@
 package com.ccfs.util
 
+import java.io.{File, FileWriter}
 import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
 
+import au.com.bytecode.opencsv.CSVWriter
 import com.ccfs.daos.UserDAO._
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
 import play.api.libs.json.{JsArray, JsNumber, JsObject, Json}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -67,23 +70,29 @@ object Utils {
     "mixes" -> mixesToJson(mixes)
   )
 
-  private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])]): Unit = {
-    // todo
-    val s = data.map { case (jrid, mixes, favs) =>
-      jrid.fold("")(j => s"$j, ${mixesAndFavsToJson(mixes, favs)}")
-    }.filterNot(_.isEmpty).mkString("\n")
+  private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], page: Int, dir: File): Unit = {
+    // Map to a sequence of strings separated by newlines
+    val s = data.toList.map { case (jrid, mixes, favs) =>
+      jrid.fold(Array.empty[String])(j => Array(j, Json.stringify(mixesAndFavsToJson(mixes, favs))))
+    }.filterNot(_.isEmpty)
 
-    println(s"DATA: $s")
+    // Create file to write to
+    val file = new File(dir, f"$page%03d.csv")
+    val csvw = new CSVWriter(new FileWriter(file))
+    try {
+      csvw.writeAll(s.asJava)
+    } finally {
+      csvw.close()
+    }
   }
 
-  private def process(db: Database, users: Seq[User]): Unit = {
+  private def process(db: Database, users: Seq[User], page: Int, dir: File): Unit = {
     val synch = Synchronize()
 
-    val f = Future.sequence(users.map(user =>
-      getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) }))
-    f.onComplete {
+    Future.sequence(users.map(user =>
+      getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) })).onComplete {
       case Success(data) =>
-        writeToFile(data)
+        writeToFile(data, page, dir)
         synch.continue()
 
       case Failure(e) =>
@@ -93,7 +102,7 @@ object Utils {
     synch.pause()
   }
 
-  def run(db: Database): Unit = {
+  def run(db: Database, dir: File): Unit = {
     val synch = Synchronize()
 
     def loop(page: Int = 0): Unit = {
@@ -102,7 +111,7 @@ object Utils {
           if (users.nonEmpty) {
             // Pull the data for these users and write to file
             println(s"processing ${users.length} users")
-            process(db, users)
+            process(db, users, page, dir)
             loop(page + 1)
           } else synch.continue()
 

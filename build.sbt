@@ -11,5 +11,6 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.38",
   "ch.qos.logback" % "logback-core" % "1.2.3",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.play" %% "play-json" % "2.6.10"
+  "com.typesafe.play" %% "play-json" % "2.6.10",
+  "net.sf.opencsv" % "opencsv" % "2.3"
 )

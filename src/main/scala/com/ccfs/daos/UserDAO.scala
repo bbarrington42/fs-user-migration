@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 object UserDAO {
 
-  val PAGE_SIZE = 20
+  val PAGE_SIZE = 500
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

@@ -1,5 +1,7 @@
 package com.ccfs
 
+import java.io.File
+
 import com.ccfs.util.Utils._
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
@@ -7,9 +9,11 @@ import slick.jdbc.JdbcProfile
 object Main {
   val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-tunnel")
 
+  val dir = new File("data")
+
   def main(args: Array[String]): Unit = {
 
-    using(dbConfig.db)(db => run(db))
+    using(dbConfig.db)(db => run(db, dir))
   }
 
 }
