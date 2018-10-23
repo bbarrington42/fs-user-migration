@@ -43,36 +43,6 @@ object Utils {
     }
   }
 
-  /*
-  {
-  "favorites": [
-    1596915,
-    1574026,
-    1574025
-  ],
-  "mixes": [
-    {
-      "name": "Mix1",
-      "mixItems": [
-        {
-          "bevID": 1565599,
-          "ratio": 25
-        },
-        {
-          "bevID": 1475614,
-          "ratio": 41
-        },
-        {
-          "bevID": 1482850,
-          "ratio": 34
-        }
-      ]
-    }
-  ]
-}
-
-   */
-
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
     "bevID" -> mixItem.beverageId,
     "ratio" -> mixItem.ratio
@@ -114,7 +84,7 @@ object Utils {
         synch.continue()
 
       case Failure(e) =>
-        println(s"Oooops: ${e.getClass.getName}")
+        println(s"Oooops: ${e.getClass.getName} - ${e.getMessage}")
         synch.continue()
     }
     synch.pause()
@@ -135,7 +105,7 @@ object Utils {
 
         case Failure(e) =>
           // todo
-          println(s"Oooops: ${e.getClass.getName}")
+          println(s"Oooops: ${e.getClass.getName} - ${e.getMessage}")
           synch.continue()
       }
     }
