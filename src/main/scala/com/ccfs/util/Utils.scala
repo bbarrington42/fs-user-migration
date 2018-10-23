@@ -1,5 +1,7 @@
 package com.ccfs.util
 
+import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
+
 import com.ccfs.daos.UserDAO._
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
 
@@ -12,6 +14,33 @@ object Utils {
   import com.ccfs.Main.dbConfig.profile.api._
 
   def using(db: Database)(f: Database => Unit): Unit = try f(db) finally db.close
+
+  class Synchronize(lock: Lock, cond: Condition) {
+    def pause() = {
+      lock.lock()
+      try {
+        cond.await()
+      } finally {
+        lock.unlock()
+      }
+    }
+
+    def continue() = {
+      lock.lock()
+      try {
+        cond.signal()
+      } finally {
+        lock.unlock()
+      }
+    }
+  }
+
+  object Synchronize {
+    def apply() = {
+      val lock = new ReentrantLock()
+      new Synchronize(lock, lock.newCondition())
+    }
+  }
 
   /*
   {
@@ -43,37 +72,30 @@ object Utils {
 
    */
 
-  // (Seq[(UserMix, Seq[MixItem])], Seq[Int])
-
   private def writeToFile(data: Seq[(String, Seq[(UserMix, Seq[MixItem])], Seq[Int])]): Unit = {
     // todo
     println(s"DATA: $data")
   }
 
   private def process(db: Database, users: Seq[User]): Unit = {
-    val synch = new Object
+    val synch = Synchronize()
+
     val f = Future.sequence(users.map(user =>
       getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) }))
     f.onComplete {
       case Success(data) =>
         writeToFile(data)
-        synch.synchronized {
-          synch.notify()
-        }
+        synch.continue()
 
       case Failure(e) =>
         println(s"Oooops: ${e.getClass.getName}")
-        synch.synchronized {
-          synch.notify()
-        }
+        synch.continue()
     }
-
-    synch.synchronized {
-      synch.wait()
-    }
+    synch.pause()
   }
 
   def run(db: Database): Unit = {
+    val synch = Synchronize()
 
     def loop(page: Int = 0): Unit = {
       getUserPage(db, page).onComplete {
@@ -83,23 +105,17 @@ object Utils {
             println(s"processing ${users.length} users")
             process(db, users)
             loop(page + 1)
-          } else synchronized {
-            notify()
-          }
+          } else synch.continue()
 
         case Failure(e) =>
           // todo
           println(s"Oooops: ${e.getClass.getName}")
-          synchronized {
-            notify()
-          }
+          synch.continue()
       }
     }
 
     loop()
 
-    synchronized {
-      wait()
-    }
+    synch.pause()
   }
 }
