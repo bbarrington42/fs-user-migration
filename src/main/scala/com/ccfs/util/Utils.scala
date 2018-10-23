@@ -4,6 +4,7 @@ import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
 
 import com.ccfs.daos.UserDAO._
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
+import play.api.libs.json.{JsArray, JsNumber, JsObject, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -72,9 +73,34 @@ object Utils {
 
    */
 
+  private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
+    "bevID" -> mixItem.beverageId,
+    "ratio" -> mixItem.ratio
+  )
+
+  private def mixItemsToJson(mixItems: Seq[MixItem]): JsArray =
+    Json.arr(mixItems.map(mixItemToJson))
+
+  private def mixToJson(mix: UserMix, mixItems: Seq[MixItem]): JsObject = Json.obj(
+    "name" -> mix.name,
+    "mixItems" -> mixItemsToJson(mixItems)
+  )
+
+  private def favsToJson(favs: Seq[Int]): JsArray =
+    Json.arr(favs.map(JsNumber(_)))
+
+  private def mixesToJson(mixes: Seq[(UserMix, Seq[MixItem])]): JsArray =
+    Json.arr(mixes.map { case (mix, mixItems) => mixToJson(mix, mixItems) })
+
+  private def mixesAndFavsToJson(mixes: Seq[(UserMix, Seq[MixItem])], favs: Seq[Int]): JsObject = Json.obj(
+    "favorites" -> favsToJson(favs),
+    "mixes" -> mixesToJson(mixes)
+  )
+
   private def writeToFile(data: Seq[(String, Seq[(UserMix, Seq[MixItem])], Seq[Int])]): Unit = {
     // todo
-    println(s"DATA: $data")
+    val s = data.map{case(jrid, mixes, favs)=> s"$jrid, ${mixesAndFavsToJson(mixes, favs)}"}.mkString("\n")
+    println(s"DATA: $s")
   }
 
   private def process(db: Database, users: Seq[User]): Unit = {
@@ -98,7 +124,7 @@ object Utils {
     val synch = Synchronize()
 
     def loop(page: Int = 0): Unit = {
-      getUserPage(db, page).onComplete {
+      getUsers(db, page).onComplete {
         case Success(users) =>
           if (users.nonEmpty) {
             // Pull the data for these users and write to file

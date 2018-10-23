@@ -13,12 +13,12 @@ object UserModel {
     id: Int
   )
 
-  implicit val userFormat = Json.format[User]
+  //implicit val userFormat = Json.format[User]
 
 
   case class UserFavorite(userId: Int, beverageId: Int, rank: Int)
 
-  implicit val userFavoriteFormat = Json.format[UserFavorite]
+  //implicit val userFavoriteFormat = Json.format[UserFavorite]
 
 
   case class UserMix
@@ -36,7 +36,7 @@ object UserModel {
     mixId: Int
   )
 
-  implicit val userMixFormat = Json.format[UserMix]
-  implicit val mixItemFormat = Json.format[MixItem]
+  //implicit val userMixFormat = Json.format[UserMix]
+  //implicit val mixItemFormat = Json.format[MixItem]
 
 }

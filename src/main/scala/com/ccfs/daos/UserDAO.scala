@@ -85,7 +85,7 @@ object UserDAO {
     db.run(action)
   }
 
-  def getUserPage(db: Database, page: Int): Future[Seq[User]] =
+  def getUsers(db: Database, page: Int): Future[Seq[User]] =
     db.run(users.sortBy(_.id).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
 
   def getUserPrefs(db: Database, userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
