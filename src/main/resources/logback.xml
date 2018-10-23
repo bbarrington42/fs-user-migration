@@ -1,0 +1,33 @@
+<configuration>
+
+
+    <appender name="ROOT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${application.home:-.}/logs/root.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${application.home:-.}/logs/root.%d{yyyy-MM-dd_HH:mm:ss:SSS}%i.log.gz</fileNamePattern>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>30MB</MaxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <pattern>%d{ISO8601} [%5p] %-25.25c{2} {%thread} -> %m%n%xException</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="ROOT" />
+    </root>
+
+
+</configuration>

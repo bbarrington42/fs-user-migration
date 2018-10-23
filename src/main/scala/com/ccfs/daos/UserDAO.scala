@@ -10,6 +10,8 @@ import scala.concurrent.Future
 
 object UserDAO {
 
+  val PAGE_SIZE = 20
+
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import Main.dbConfig.profile.api._
@@ -62,24 +64,19 @@ object UserDAO {
   private[daos] val userMixes = TableQuery[UserMixes]
   private[daos] val mixItems = TableQuery[MixItems]
 
-  val PAGE_SIZE = 20
+  private def selectUserMixes(userId: Int): DBIO[Seq[UserMix]] = userMixes.filter(_.userId === userId).sortBy(_.rank).result
 
-  def selectUserMixes(userId: Int): DBIO[Seq[UserMix]] = userMixes.filter(_.userId === userId).sortBy(_.rank).result
+  private def selectMixItem(mixId: Int): DBIO[Seq[MixItem]] = mixItems.filter(_.mixId === mixId).result
 
-  def selectMixItem(mixId: Int): DBIO[Seq[MixItem]] = mixItems.filter(_.mixId === mixId).result
+  private def selectMixItems(mixIds: Seq[Int]): DBIO[Seq[Seq[MixItem]]] = DBIO.sequence(mixIds.map(selectMixItem))
 
-  def selectMixItems(mixIds: Seq[Int]): DBIO[Seq[Seq[MixItem]]] = DBIO.sequence(mixIds.map(selectMixItem))
-
-  def getUserPage(db: Database, page: Int): Future[Seq[User]] =
-    db.run(users.sortBy(_.id).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
-
-  def getFavorites(db: Database, userId: Int): Future[Seq[Int]] = {
+  private def getFavorites(db: Database, userId: Int): Future[Seq[Int]] = {
     val q = userFavorites.filter(_.userId === userId).sortBy(_.rank).result
     val action = q.map(s => s.map { case UserFavorite(_, bevId, _) => bevId })
     db.run(action)
   }
 
-  def getUserMixes(db: Database, userId: Int): Future[Seq[(UserMix, Seq[MixItem])]] = {
+  private def getUserMixes(db: Database, userId: Int): Future[Seq[(UserMix, Seq[MixItem])]] = {
     val action = for {
       mixes <- selectUserMixes(userId)
       mixIds = mixes.map(_.id)
@@ -88,10 +85,12 @@ object UserDAO {
     db.run(action)
   }
 
-  def getUserSelections(db: Database, userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
+  def getUserPage(db: Database, page: Int): Future[Seq[User]] =
+    db.run(users.sortBy(_.id).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
+
+  def getUserPrefs(db: Database, userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
     mixes <- getUserMixes(db, userId)
     favs <- getFavorites(db, userId)
   } yield (mixes, favs)
-
 
 }
