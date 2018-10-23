@@ -12,5 +12,4 @@ object Main {
     using(dbConfig.db)(db => run(db))
   }
 
-
 }

@@ -67,9 +67,12 @@ object Utils {
     "mixes" -> mixesToJson(mixes)
   )
 
-  private def writeToFile(data: Seq[(String, Seq[(UserMix, Seq[MixItem])], Seq[Int])]): Unit = {
+  private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])]): Unit = {
     // todo
-    val s = data.map{case(jrid, mixes, favs)=> s"$jrid, ${mixesAndFavsToJson(mixes, favs)}"}.mkString("\n")
+    val s = data.map { case (jrid, mixes, favs) =>
+      jrid.fold("")(j => s"$j, ${mixesAndFavsToJson(mixes, favs)}")
+    }.filterNot(_.isEmpty).mkString("\n")
+
     println(s"DATA: $s")
   }
 

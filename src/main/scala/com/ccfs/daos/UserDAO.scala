@@ -18,7 +18,7 @@ object UserDAO {
 
   private[daos] class Users(tag: Tag) extends Table[User](tag, "FreestyleUser") {
 
-    def jrid = column[String]("jrid")
+    def jrid = column[Option[String]]("jrid")
 
     def id = column[Int]("id", O.PrimaryKey)
 
@@ -37,9 +37,9 @@ object UserDAO {
 
   private[daos] class UserMixes(tag: Tag) extends Table[UserMix](tag, "UserMixes") {
 
-    def name = column[String]("name")
+    def name = column[Option[String]]("name")
 
-    def userId = column[Int]("userId")
+    def userId = column[Option[Int]]("userId")
 
     def rank = column[Int]("rank")
 
@@ -49,11 +49,11 @@ object UserDAO {
   }
 
   private[daos] class MixItems(tag: Tag) extends Table[MixItem](tag, "MixItems") {
-    def beverageId = column[Int]("beverageId")
+    def beverageId = column[Option[Int]]("beverageId")
 
-    def ratio = column[Int]("ratio")
+    def ratio = column[Option[Int]]("ratio")
 
-    def mixId = column[Int]("mixId")
+    def mixId = column[Option[Int]]("mixId")
 
     def * = (beverageId, ratio, mixId) <> (MixItem.tupled, MixItem.unapply)
   }
