@@ -6,7 +6,7 @@ import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
 import au.com.bytecode.opencsv.CSVWriter
 import com.ccfs.daos.UserDAO._
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
-import play.api.libs.json.{JsArray, JsNumber, JsObject, Json}
+import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,92 +46,25 @@ object Utils {
     }
   }
 
-  /*
-  {
-  "qrid": "AE628FF6-D892-5A27-CE0C-60B5FD6BCF81#0238E7CF",
-  "favorites": [
-    1596915,
-    1574026,
-    1574025
-  ],
-  "mixes": [
-    {
-      "name": "Mix1",
-      "mixItems": [
-        {
-          "bevID": 1565599,
-          "ratio": 25
-        },
-        {
-          "bevID": 1475614,
-          "ratio": 41
-        },
-        {
-          "bevID": 1482850,
-          "ratio": 34
-        }
-      ]
-    },
-    {
-      "name": "Mix2",
-      "mixItems": [
-        {
-          "bevID": 1866601,
-          "ratio": 37
-        },
-        {
-          "bevID": 1866599,
-          "ratio": 38
-        },
-        {
-          "bevID": 1475650,
-          "ratio": 25
-        }
-      ]
-    },
-    {
-      "name": "Mix3",
-      "mixItems": [
-        {
-          "bevID": 1522597,
-          "ratio": 34
-        },
-        {
-          "bevID": 1475650,
-          "ratio": 33
-        },
-        {
-          "bevID": 1475673,
-          "ratio": 33
-        }
-      ]
-    }
-  ]
-}
-
-   */
 
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
     "bevID" -> mixItem.beverageId,
     "ratio" -> mixItem.ratio
   )
 
-  private def mixItemsToJson(mixItems: Seq[MixItem]): JsArray =
-    Json.arr(mixItems.map(mixItemToJson))
+  private def mixItemsToJson(mixItems: Seq[MixItem]): Seq[JsObject] =
+    mixItems.map(mixItemToJson)
 
   private def mixToJson(mix: UserMix, mixItems: Seq[MixItem]): JsObject = Json.obj(
     "name" -> mix.name,
     "mixItems" -> mixItemsToJson(mixItems)
   )
 
-  private def favsToJson(favs: Seq[Int]): JsArray =
-    Json.arr(favs.map(JsNumber(_)))
-
-  private def mixesToJson(mixes: Seq[(UserMix, Seq[MixItem])]): JsArray =
-    Json.arr(mixes.map { case (mix, mixItems) => mixToJson(mix, mixItems) })
+  private def mixesToJson(mixes: Seq[(UserMix, Seq[MixItem])]): Seq[JsObject] =
+    mixes.map { case (mix, mixItems) => mixToJson(mix, mixItems) }
 
   private def mixesAndFavsToJson(mixes: Seq[(UserMix, Seq[MixItem])], favs: Seq[Int]): JsObject = Json.obj(
-    "favorites" -> favsToJson(favs),
+    "favorites" -> favs,
     "mixes" -> mixesToJson(mixes)
   )
 
@@ -186,7 +119,25 @@ object Utils {
           synch.continue()
       }
     }
+
     loop()
     synch.pause()
+  }
+
+  // Temporary
+  def main(args: Array[String]): Unit = {
+    val mis = Seq(MixItem(Some(1), Some(30), Some(42)),
+      MixItem(Some(2), Some(70), Some(42)))
+
+    val mix = UserMix(Option("mix"), Some(11), 0, 42)
+
+    val mixes = Seq((mix, mis))
+
+    val favs = Seq.empty[Int]
+
+    val res = mixesAndFavsToJson(mixes, favs)
+
+    println(Json.stringify(res))
+
   }
 }
