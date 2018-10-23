@@ -71,7 +71,7 @@ object Utils {
   )
 
   private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], page: Int, dir: File): Unit = {
-    // Map to a sequence of strings separated by newlines
+    // Map to a List of string arrays. Each component of the Array is an element to be separated with commas.
     val s = data.toList.map { case (jrid, mixes, favs) =>
       jrid.fold(Array.empty[String])(j => Array(j, Json.stringify(mixesAndFavsToJson(mixes, favs))))
     }.filterNot(_.isEmpty)
