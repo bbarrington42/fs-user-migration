@@ -46,6 +46,71 @@ object Utils {
     }
   }
 
+  /*
+  {
+  "qrid": "AE628FF6-D892-5A27-CE0C-60B5FD6BCF81#0238E7CF",
+  "favorites": [
+    1596915,
+    1574026,
+    1574025
+  ],
+  "mixes": [
+    {
+      "name": "Mix1",
+      "mixItems": [
+        {
+          "bevID": 1565599,
+          "ratio": 25
+        },
+        {
+          "bevID": 1475614,
+          "ratio": 41
+        },
+        {
+          "bevID": 1482850,
+          "ratio": 34
+        }
+      ]
+    },
+    {
+      "name": "Mix2",
+      "mixItems": [
+        {
+          "bevID": 1866601,
+          "ratio": 37
+        },
+        {
+          "bevID": 1866599,
+          "ratio": 38
+        },
+        {
+          "bevID": 1475650,
+          "ratio": 25
+        }
+      ]
+    },
+    {
+      "name": "Mix3",
+      "mixItems": [
+        {
+          "bevID": 1522597,
+          "ratio": 34
+        },
+        {
+          "bevID": 1475650,
+          "ratio": 33
+        },
+        {
+          "bevID": 1475673,
+          "ratio": 33
+        }
+      ]
+    }
+  ]
+}
+
+   */
+
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
     "bevID" -> mixItem.beverageId,
     "ratio" -> mixItem.ratio

@@ -7,7 +7,7 @@ import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
 object Main {
-  val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-tunnel")
+  val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
 
   val dir = new File("data")
 
