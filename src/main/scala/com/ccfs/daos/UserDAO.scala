@@ -62,6 +62,7 @@ object UserDAO {
   private[daos] val userMixes = TableQuery[UserMixes]
   private[daos] val mixItems = TableQuery[MixItems]
 
+  val PAGE_SIZE = 20
 
   def selectUserMixes(userId: Int): DBIO[Seq[UserMix]] = userMixes.filter(_.userId === userId).sortBy(_.rank).result
 
@@ -69,7 +70,8 @@ object UserDAO {
 
   def selectMixItems(mixIds: Seq[Int]): DBIO[Seq[Seq[MixItem]]] = DBIO.sequence(mixIds.map(selectMixItem))
 
-  def getUsers(db: Database): Future[Seq[User]] = db.run(users.result)
+  def getUserPage(db: Database, page: Int): Future[Seq[User]] =
+    db.run(users.sortBy(_.id).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
 
   def getFavorites(db: Database, userId: Int): Future[Seq[Int]] = {
     val q = userFavorites.filter(_.userId === userId).sortBy(_.rank).result
