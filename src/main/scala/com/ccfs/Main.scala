@@ -11,9 +11,6 @@ object Main {
 
   val dir = new File("data")
 
-  def main(args: Array[String]): Unit = {
-
-    using(dbConfig.db)(db => run(db, dir))
-  }
+  def main(args: Array[String]): Unit = using(dbConfig.db)(db => run(db, dir))
 
 }

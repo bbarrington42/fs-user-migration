@@ -72,17 +72,17 @@ object Utils {
 
   private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], page: Int, dir: File): Unit = {
     // Map to a List of string arrays. Each component of the Array is an element to be separated with commas.
-    val s = data.toList.map { case (jrid, mixes, favs) =>
+    val lines = data.toList.map { case (jrid, mixes, favs) =>
       jrid.fold(Array.empty[String])(j => Array(j, Json.stringify(mixesAndFavsToJson(mixes, favs))))
     }.filterNot(_.isEmpty)
 
     // Create file to write to
     val file = new File(dir, f"$page%03d.csv")
-    val csvw = new CSVWriter(new FileWriter(file))
+    val csv = new CSVWriter(new FileWriter(file))
     try {
-      csvw.writeAll(s.asJava)
+      csv.writeAll(lines.asJava)
     } finally {
-      csvw.close()
+      csv.close()
     }
   }
 
@@ -121,9 +121,7 @@ object Utils {
           synch.continue()
       }
     }
-
     loop()
-
     synch.pause()
   }
 }
