@@ -6,6 +6,7 @@ import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
 import au.com.bytecode.opencsv.CSVWriter
 import com.ccfs.daos.UserDAO._
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
+import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.JavaConverters._
@@ -75,7 +76,7 @@ object Utils {
     }.filterNot(_.isEmpty)
 
     // Create file to write to
-    val file = new File(dir, f"$page%03d.csv")
+    val file = new File(dir, f"userdata_${page + 1}%03d.csv")
     val csv = new CSVWriter(new FileWriter(file))
     try {
       csv.writeAll(lines.asJava)
@@ -101,6 +102,9 @@ object Utils {
   }
 
   def run(db: Database, dir: File): Unit = {
+
+    println(s"Starting at: ${DateTime.now()}")
+
     val synch = Synchronize()
 
     def loop(page: Int = 0): Unit = {
@@ -122,6 +126,8 @@ object Utils {
 
     loop()
     synch.pause()
+
+    println(s"Stopping at: ${DateTime.now()}")
   }
 
   // Temporary
