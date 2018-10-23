@@ -69,6 +69,8 @@ object UserDAO {
 
   def selectMixItems(mixIds: Seq[Int]): DBIO[Seq[Seq[MixItem]]] = DBIO.sequence(mixIds.map(selectMixItem))
 
+  def getUsers(db: Database): Future[Seq[User]] = db.run(users.result)
+
   def getFavorites(db: Database, userId: Int): Future[Seq[Int]] = {
     val q = userFavorites.filter(_.userId === userId).sortBy(_.rank).result
     val action = q.map(s => s.map { case UserFavorite(_, bevId, _) => bevId })
