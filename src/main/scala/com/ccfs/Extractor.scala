@@ -91,8 +91,6 @@ object Extractor {
 
       val curr = acc ++ left
 
-      println(s"current users with payloads: ${curr.length}")
-
       if (curr.length < PAGE_SIZE) (index, curr)
       else {
         writeToFile(curr, index, dir)
@@ -112,6 +110,7 @@ object Extractor {
           // Pull the data for these users and write to file
           println(s"processing ${users.length} users")
           val (newIndex, lines) = process(db, users, acc, index, dir)
+          println(s"index: $newIndex, current accumulated users: ${lines.length}")
           if (newIndex != -1) loop(page + 1, newIndex, lines) else notify()
 
         case Failure(e) =>
