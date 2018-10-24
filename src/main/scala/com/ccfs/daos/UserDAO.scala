@@ -17,7 +17,7 @@ object UserDAO {
 
   private[daos] class Users(tag: Tag) extends Table[User](tag, "FreestyleUser") {
 
-    def jrid = column[Option[String]]("fbid")
+    def jrid = column[Option[String]]("jrid")
 
     def id = column[Int]("id", O.PrimaryKey)
 
