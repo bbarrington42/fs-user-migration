@@ -2,10 +2,10 @@ package com.ccfs
 
 import java.io.{File, FileWriter}
 
-import au.com.bytecode.opencsv.CSVWriter
 import com.ccfs.daos.UserDAO.{getUserPrefs, getUsers}
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
 import com.ccfs.util.Synchronize
+import com.opencsv.CSVWriter
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, Json}
 
