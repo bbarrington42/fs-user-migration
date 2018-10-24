@@ -1,11 +1,11 @@
-package com.ccfs.util
+package com.ccfs
 
 import java.io.{File, FileWriter}
-import java.util.concurrent.locks.{Condition, Lock, ReentrantLock}
 
 import au.com.bytecode.opencsv.CSVWriter
-import com.ccfs.daos.UserDAO._
+import com.ccfs.daos.UserDAO.{getUserPrefs, getUsers}
 import com.ccfs.model.UserModel.{MixItem, User, UserMix}
+import com.ccfs.util.Synchronize
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, Json}
 
@@ -14,47 +14,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-object Utils {
+object Extractor {
 
   import com.ccfs.Main.dbConfig.profile.api._
 
   def using(db: Database)(f: Database => Unit): Unit = try f(db) finally db.close
 
-  class Synchronize(lock: Lock, cond: Condition) {
-    def pause() = {
-      lock.lock()
-      try {
-        cond.await()
-      } finally {
-        lock.unlock()
-      }
-    }
-
-    def continue() = {
-      lock.lock()
-      try {
-        cond.signal()
-      } finally {
-        lock.unlock()
-      }
-    }
-  }
-
-  object Synchronize {
-    def apply() = {
-      val lock = new ReentrantLock()
-      new Synchronize(lock, lock.newCondition())
-    }
-  }
-
-
+  // Conversion to JSON
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
     "bevID" -> mixItem.beverageId,
     "ratio" -> mixItem.ratio
   )
 
-  private def mixItemsToJson(mixItems: Seq[MixItem]): Seq[JsObject] =
-    mixItems.map(mixItemToJson)
+  private def mixItemsToJson(mixItems: Seq[MixItem]): Seq[JsObject] = mixItems.map(mixItemToJson)
 
   private def mixToJson(mix: UserMix, mixItems: Seq[MixItem]): JsObject = Json.obj(
     "name" -> mix.name,
@@ -71,12 +43,16 @@ object Utils {
 
   private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], page: Int, dir: File): Unit = {
     // Map to a List of string arrays. Each component of the Array is an element to be separated with commas.
+    // If the jrid is missing or if the mixes AND favorites are both empty, then filter them out.
     val lines = data.toList.map { case (jrid, mixes, favs) =>
-      jrid.fold(Array.empty[String])(j => Array(j, Json.stringify(mixesAndFavsToJson(mixes, favs))))
+      if (mixes.isEmpty && favs.isEmpty) Array.empty[String] else
+        jrid.fold(Array.empty[String])(j => Array(j, Json.stringify(mixesAndFavsToJson(mixes, favs))))
     }.filterNot(_.isEmpty)
 
     // Create file to write to
     val file = new File(dir, f"userdata_${page + 1}%03d.csv")
+    println(s"Writing ${lines.length} lines to ${file.getName}")
+
     val csv = new CSVWriter(new FileWriter(file))
     try {
       csv.writeAll(lines.asJava)
@@ -85,6 +61,7 @@ object Utils {
     }
   }
 
+  // Processes one page of users. Pauses for completion to avoid depleting resources.
   private def process(db: Database, users: Seq[User], page: Int, dir: File): Unit = {
     val synch = Synchronize()
 
@@ -110,6 +87,7 @@ object Utils {
     def loop(page: Int = 0): Unit = {
       getUsers(db, page).onComplete {
         case Success(users) =>
+          // Terminate on an empty sequence
           if (users.nonEmpty) {
             // Pull the data for these users and write to file
             println(s"processing ${users.length} users")
@@ -125,6 +103,7 @@ object Utils {
     }
 
     loop()
+    // Wait for completion
     synch.pause()
 
     println(s"Stopping at: ${DateTime.now()}")

@@ -1,9 +1,15 @@
+import sbtassembly.AssemblyPlugin.defaultShellScript
+
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript))
+
+assemblyJarName in assembly := "fs-user-migration"
+
+
 name := "fs-user-migration"
 
 version := "0.1"
 
 scalaVersion := "2.12.7"
-
 
 
 libraryDependencies ++= Seq(
