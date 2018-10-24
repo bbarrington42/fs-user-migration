@@ -84,7 +84,7 @@ object Extractor {
 
       val lines = convert(batch)
 
-      println(s"converted: ${lines.length}")
+      println(s"${lines.length}/${users.length}")
 
       // If we have accumulated enough entries, write to file
       val (left, right) = lines.splitAt(PAGE_SIZE - acc.length)
@@ -111,12 +111,16 @@ object Extractor {
           println(s"processing ${users.length} users")
           val (newIndex, lines) = process(db, users, acc, index, dir)
           println(s"index: $newIndex, current accumulated users: ${lines.length}")
-          if (newIndex != -1) loop(page + 1, newIndex, lines) else notify()
+          if (newIndex != -1) loop(page + 1, newIndex, lines) else synchronized {
+            notify()
+          }
 
         case Failure(e) =>
           // todo
           println(s"Oooops: ${e.getClass.getName} - ${e.getMessage}")
-          notify()
+          synchronized {
+            notify()
+          }
       }
     }
 
