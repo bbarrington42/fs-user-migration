@@ -108,21 +108,4 @@ object Extractor {
 
     println(s"Stopping at: ${DateTime.now()}")
   }
-
-  // Temporary
-  def main(args: Array[String]): Unit = {
-    val mis = Seq(MixItem(Some(1), Some(30), Some(42)),
-      MixItem(Some(2), Some(70), Some(42)))
-
-    val mix = UserMix(Option("mix"), Some(11), 0, 42)
-
-    val mixes = Seq((mix, mis))
-
-    val favs = Seq.empty[Int]
-
-    val res = mixesAndFavsToJson(mixes, favs)
-
-    println(Json.stringify(res))
-
-  }
 }

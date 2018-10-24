@@ -1,6 +1,7 @@
 package com.ccfs.daos
 
 import com.ccfs.Main
+import com.ccfs.Main._
 import com.ccfs.model.UserModel.{MixItem, User, UserFavorite, UserMix}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -9,8 +10,6 @@ import scala.concurrent.Future
 
 
 object UserDAO {
-
-  val PAGE_SIZE = 5000
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 

@@ -7,10 +7,17 @@ import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
 object Main {
-  val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
+
+  // How many users to query at a time
+  val PAGE_SIZE = 5000
 
   // Directory where data files are to be written
-  val dir = new File("data")
+  val dirName = "data"
+
+  val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
+
+  val dir = new File(dirName)
+  dir.mkdir()
 
   // Do it
   def main(args: Array[String]): Unit = using(dbConfig.db)(db => run(db, dir))
