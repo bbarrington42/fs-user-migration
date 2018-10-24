@@ -2,7 +2,6 @@ package com.ccfs.daos
 
 import com.ccfs.Main
 import com.ccfs.Main._
-import com.ccfs.model.UserModel.{MixItem, User, UserFavorite, UserMix}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,6 +13,15 @@ object UserDAO {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import Main.dbConfig.profile.api._
+
+  case class User(jrid: Option[String], id: Int)
+
+  case class UserFavorite(userId: Int, beverageId: Int, rank: Int)
+
+  case class UserMix(name: Option[String], userId: Option[Int], rank: Int, id: Int)
+
+  case class MixItem(beverageId: Option[Int], ratio: Option[Int], mixId: Option[Int])
+
 
   private[daos] class Users(tag: Tag) extends Table[User](tag, "FreestyleUser") {
 

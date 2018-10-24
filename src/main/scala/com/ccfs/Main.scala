@@ -9,7 +9,7 @@ import slick.jdbc.JdbcProfile
 object Main {
 
   // How many users to query at a time
-  val PAGE_SIZE = 5000
+  val PAGE_SIZE = 2000
 
   // Directory where data files are to be written
   val dirName = "data"
