@@ -41,7 +41,7 @@ object Extractor {
     "mixes" -> mixesToJson(mixes)
   )
 
-  private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], page: Int, dir: File): Unit = {
+  private def writeToFile(data: Seq[(Option[String], Seq[(UserMix, Seq[MixItem])], Seq[Int])], index: Int, dir: File): Unit = {
     // Map to a List of string arrays. Each component of the Array is an element to be separated with commas.
     // If the jrid is missing or if the mixes AND favorites are both empty, then filter them out.
     val lines = data.toList.map { case (jrid, mixes, favs) =>
@@ -50,7 +50,7 @@ object Extractor {
     }.filterNot(_.isEmpty)
 
     // Create file to write to
-    val file = new File(dir, f"userdata_${page + 1}%03d.csv")
+    val file = new File(dir, f"userdata_$index%03d.csv")
     println(s"Writing ${lines.length} lines to ${file.getName}")
 
     val csv = new CSVWriter(new FileWriter(file))
@@ -68,7 +68,7 @@ object Extractor {
     Future.sequence(users.map(user =>
       getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) })).onComplete {
       case Success(data) =>
-        writeToFile(data, page, dir)
+        writeToFile(data, page + 1, dir)
         synch.continue()
 
       case Failure(e) =>
