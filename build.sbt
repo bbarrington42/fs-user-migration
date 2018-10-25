@@ -19,5 +19,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.play" %% "play-json" % "2.6.10",
   "com.opencsv" % "opencsv" % "4.3.2",
-  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.3"
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.2.3",
+  "org.scalaz" %% "scalaz-core" % "7.2.26"
 )

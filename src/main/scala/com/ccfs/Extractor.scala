@@ -7,6 +7,7 @@ import com.ccfs.daos.UserDAO.{getUserPrefs, getUsers, _}
 import com.opencsv.CSVWriter
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, Json}
+import scalaz.\/
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -66,7 +67,8 @@ object Extractor {
     }.filterNot(_.isEmpty)
 
   // Processes one page of users. Pauses for completion to avoid depleting resources.
-  private def process(db: Database, users: Seq[User], acc: List[Array[String]], index: Int, dir: File): (Int, List[Array[String]]) = {
+  private def process(db: Database, users: Seq[User], acc: List[Array[String]],
+                      index: Int, dir: File): Throwable \/ (Int, List[Array[String]]) = \/.fromTryCatchNonFatal {
 
     // Terminate on empty user sequence
     if (users.isEmpty) {
@@ -80,7 +82,7 @@ object Extractor {
       val f = Future.sequence(users.map(user =>
         getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) }))
 
-      val batch = Await.result(f, 15 seconds)
+      val batch = Await.result(f, Duration(1, MINUTES))
 
       val lines = convert(batch)
 
@@ -109,11 +111,18 @@ object Extractor {
         case Success(users) =>
           // Pull the data for these users and write to file
           println(s"processing ${users.length} users")
-          val (newIndex, lines) = process(db, users, acc, index, dir)
-          println(s"index: $newIndex, current accumulated users: ${lines.length}")
-          if (newIndex != -1) loop(page + 1, newIndex, lines) else synchronized {
-            notify()
-          }
+          process(db, users, acc, index, dir).fold(e => {
+            println(s"Oooops: ${e.getClass.getName} - ${e.getMessage}")
+            synchronized {
+              notify()
+            }
+          }, r => {
+            val (newIndex, lines) = r
+            println(s"index: $newIndex, current accumulated users: ${lines.length}")
+            if (newIndex != -1) loop(page + 1, newIndex, lines) else synchronized {
+              notify()
+            }
+          })
 
         case Failure(e) =>
           // todo
