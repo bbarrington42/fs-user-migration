@@ -118,7 +118,7 @@ object Extractor {
             }
           }, r => {
             val (newIndex, lines) = r
-            println(s"index: $newIndex, current accumulated users: ${lines.length}")
+            println(s"index: $newIndex, size of next batch: ${lines.length}")
             if (newIndex != -1) loop(page + 1, newIndex, lines) else synchronized {
               notify()
             }
