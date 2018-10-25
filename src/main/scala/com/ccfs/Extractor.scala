@@ -10,7 +10,7 @@ import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
@@ -80,7 +80,7 @@ object Extractor {
       val f = Future.sequence(users.map(user =>
         getUserPrefs(db, user.id).map { case (mixes, favs) => (user.jrid, mixes, favs) }))
 
-      val batch = Await.result(f, Duration.Inf)
+      val batch = Await.result(f, 15 seconds)
 
       val lines = convert(batch)
 
