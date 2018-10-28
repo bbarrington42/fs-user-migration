@@ -105,20 +105,26 @@ object Extractor {
 
   private def zip(dir: File): File = {
 
-    def zip(zos: ZipOutputStream, file: File): ZipOutputStream = {
-      val fis = new FileInputStream(file)
+    def xfr(in: InputStream, out: OutputStream): Unit = {
+      val bytes = Array.fill[Byte](1000)(0)
 
-      def loop(byte: Int): Unit = {
-        if (byte != -1) {
-          zos.write(byte)
-          loop(fis.read())
+      def loop(len: Int): Unit = {
+        if (-1 != len) {
+          out.write(bytes, 0, len)
+          loop(in.read(bytes))
         }
       }
+
+      loop(in.read(bytes))
+    }
+
+    def zip(zos: ZipOutputStream, file: File): ZipOutputStream = {
+      val fis = new FileInputStream(file)
 
       try {
         val entry = new ZipEntry(file.getName)
         zos.putNextEntry(entry)
-        loop(fis.read())
+        xfr(fis, zos)
       } finally fis.close()
 
       zos
