@@ -103,33 +103,33 @@ object Extractor {
 
   }
 
-  private def compress(dir: File): File = {
+  private def zip(dir: File): File = {
 
-    def compress(file: File, zipOut: ZipOutputStream): Unit = {
+    def zip(zos: ZipOutputStream, file: File): ZipOutputStream = {
       val fis = new FileInputStream(file)
 
       def loop(byte: Int): Unit = {
         if (byte != -1) {
-          zipOut.write(byte)
+          zos.write(byte)
           loop(fis.read())
         }
       }
 
       try {
         val entry = new ZipEntry(file.getName)
-        zipOut.putNextEntry(entry)
+        zos.putNextEntry(entry)
         loop(fis.read())
       } finally fis.close()
+
+      zos
     }
 
-
     val dest = new File(dir, basename + ".zip")
-    val zipOut = new ZipOutputStream(new FileOutputStream(dest))
+    val out = new ZipOutputStream(new FileOutputStream(dest))
     val files = dir.listFiles((name: String) => name.endsWith(CSV))
-    files.foreach(compress(_, zipOut))
+    files.foldLeft(out)((o, f) => zip(o, f))
 
-    zipOut.close()
-
+    out.close()
     dest
   }
 
@@ -172,7 +172,7 @@ object Extractor {
     }
 
     // Zip the output
-    val zipFile = compress(dir)
+    val zipFile = zip(dir)
     println(s"Your package (${zipFile.getPath}) is ready!")
 
     println(s"Stopping at: ${DateTime.now()}")
