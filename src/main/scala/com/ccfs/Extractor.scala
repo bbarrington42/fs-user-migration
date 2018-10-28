@@ -1,6 +1,7 @@
 package com.ccfs
 
-import java.io.{File, FileWriter}
+import java.io._
+import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import com.ccfs.Main._
 import com.ccfs.daos.UserDAO.{getUserPrefs, getUsers, _}
@@ -47,7 +48,7 @@ object Extractor {
   private def writeToFile(lines: List[Array[String]], index: Int, dir: File): Unit = {
 
     // Create file to write to
-    val file = new File(dir, f"userdata_$index%03d.csv")
+    val file = new File(dir, f"${basename}_$index%03d.$CSV")
     println(s"Writing ${lines.length} lines to ${file.getName}")
 
     val csv = new CSVWriter(new FileWriter(file))
@@ -102,6 +103,36 @@ object Extractor {
 
   }
 
+  private def compress(dir: File): File = {
+
+    def compress(file: File, zipOut: ZipOutputStream): Unit = {
+      val fis = new FileInputStream(file)
+
+      def loop(byte: Int): Unit = {
+        if (byte != -1) {
+          zipOut.write(byte)
+          loop(fis.read())
+        }
+      }
+
+      try {
+        val entry = new ZipEntry(file.getName)
+        zipOut.putNextEntry(entry)
+        loop(fis.read())
+      } finally fis.close()
+    }
+
+
+    val dest = new File(dir, basename + ".zip")
+    val zipOut = new ZipOutputStream(new FileOutputStream(dest))
+    val files = dir.listFiles((name: String) => name.endsWith(CSV))
+    files.foreach(compress(_, zipOut))
+
+    zipOut.close()
+
+    dest
+  }
+
   def run(db: Database, dir: File): Unit = {
 
     println(s"Starting at: ${DateTime.now()}")
@@ -140,6 +171,11 @@ object Extractor {
       wait()
     }
 
+    // Zip the output
+    val zipFile = compress(dir)
+    println(s"Your package (${zipFile.getPath}) is ready!")
+
     println(s"Stopping at: ${DateTime.now()}")
   }
+
 }

@@ -11,6 +11,18 @@ version := "0.1"
 
 scalaVersion := "2.12.7"
 
+scalacOptions ++= Seq(
+  "-feature",
+  "-target:jvm-1.8",
+  "-encoding", "UTF-8",
+  "-unchecked",
+  "-deprecation",
+  "-Xfuture",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen"
+)
+
 
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.2.3",

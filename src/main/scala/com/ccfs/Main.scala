@@ -14,6 +14,11 @@ object Main {
   // Directory where data files are to be written
   val dirName = "data"
 
+  // Base name of files
+  val basename = "userdata"
+
+  val CSV = "csv"
+
   val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
 
   val dir = new File(dirName)
