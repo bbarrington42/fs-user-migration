@@ -103,7 +103,8 @@ object Extractor {
 
   }
 
-  private def zip(dir: File, zipFile: File): Unit = {
+  // Zip all files in a directory that match the file name filter. No recursion.
+  private def zip(dir: File, zipFile: File, filter: String => Boolean): Unit = {
     val bytes = Array.fill[Byte](1000)(0)
 
     def xfr(in: InputStream, out: OutputStream): Unit = {
@@ -132,7 +133,7 @@ object Extractor {
 
     val out = new ZipOutputStream(new FileOutputStream(zipFile))
     try {
-      val files = dir.listFiles((name: String) => name.endsWith(CSV))
+      val files = dir.listFiles(filter)
       files.foldLeft(out)((o, f) => zip(o, f))
     } finally out.close()
   }
@@ -177,7 +178,7 @@ object Extractor {
 
     // Zip the output
     val zipFile = new File(dir, basename + ".zip")
-    zip(dir, zipFile)
+    zip(dir, zipFile, name => name.endsWith(CSV))
     println(s"Your package at ${zipFile.getPath} is ready!")
 
     println(s"Stopping at: ${DateTime.now()}")
