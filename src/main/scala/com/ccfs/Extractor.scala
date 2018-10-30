@@ -41,14 +41,15 @@ object Extractor {
 
       println(s"${lines.length}/${users.length}")
 
-      // If we have accumulated enough entries, write to file
       val (left, right) = lines.splitAt(PAGE_SIZE - acc.length)
 
       val curr = acc ++ left
 
+      // If we have accumulated enough entries, write to file. Otherwise, return the current index and accumulator.
       if (curr.length < PAGE_SIZE) (index, curr)
       else {
         writeToFile(curr, index, dir)
+        // Return the next index and next accumulator.
         (index + 1, right)
       }
     }
