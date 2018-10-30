@@ -96,7 +96,7 @@ object Extractor {
 
     // Zip the output
     val zipFile = new File(dir, basename + ".zip")
-    zip(dir, zipFile, name => name.endsWith(CSV))
+    zip(dir, zipFile, _.endsWith(CSV))
     println(s"Your package at ${zipFile.getPath} is ready!")
 
     println(s"Stopping at: ${DateTime.now()}")
