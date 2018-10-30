@@ -11,4 +11,5 @@ package object ccfs {
       override def accept(dir: File, name: String): Boolean = f(name)
     }
   }
+
 }

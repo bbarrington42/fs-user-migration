@@ -20,9 +20,14 @@ object Main {
   val CSV = "csv"
 
   val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
+  
+  import dbConfig.profile.api._
+
 
   val dir = new File(dirName)
   dir.mkdir()
+
+  def using(db: Database)(f: Database => Unit): Unit = try f(db) finally db.close
 
   // Do it
   def main(args: Array[String]): Unit = using(dbConfig.db)(db => run(db, dir))
