@@ -20,7 +20,7 @@ object Main {
   val CSV = "csv"
 
   val dbConfig = DatabaseConfig.forConfig[JdbcProfile]("db-config")
-  
+
   import dbConfig.profile.api._
 
 
