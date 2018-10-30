@@ -104,9 +104,9 @@ object Extractor {
   }
 
   private def zip(dir: File, zipFile: File): Unit = {
+    val bytes = Array.fill[Byte](1000)(0)
 
     def xfr(in: InputStream, out: OutputStream): Unit = {
-      val bytes = Array.fill[Byte](1000)(0)
 
       def loop(len: Int): Unit = {
         if (-1 != len) {
@@ -131,10 +131,10 @@ object Extractor {
     }
 
     val out = new ZipOutputStream(new FileOutputStream(zipFile))
-    val files = dir.listFiles((name: String) => name.endsWith(CSV))
-    files.foldLeft(out)((o, f) => zip(o, f))
-
-    out.close()
+    try {
+      val files = dir.listFiles((name: String) => name.endsWith(CSV))
+      files.foldLeft(out)((o, f) => zip(o, f))
+    } finally out.close()
   }
 
   def run(db: Database, dir: File): Unit = {
@@ -178,7 +178,7 @@ object Extractor {
     // Zip the output
     val zipFile = new File(dir, basename + ".zip")
     zip(dir, zipFile)
-    println(s"Your package (${zipFile.getPath}) is ready!")
+    println(s"Your package at ${zipFile.getPath} is ready!")
 
     println(s"Stopping at: ${DateTime.now()}")
   }
