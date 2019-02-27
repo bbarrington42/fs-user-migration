@@ -16,7 +16,7 @@ object Content {
 
   // Conversion to JSON
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
-    "bevId" -> mixItem.beverageId,
+    "bevID" -> mixItem.beverageId,
     "ratio" -> mixItem.ratio
   )
 
