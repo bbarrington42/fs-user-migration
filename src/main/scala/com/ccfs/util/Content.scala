@@ -14,6 +14,13 @@ import scala.collection.JavaConverters._
 
 object Content {
 
+  private def isAscii(ch: Char): Boolean = 0 <= ch.toInt && 127 >= ch.toInt
+
+  private def valid(ch: Char): Boolean = isAscii(ch) && !ch.isControl
+
+  private def filter(name: String): String = name.toList.filter(valid).mkString
+
+
   // Conversion to JSON
   private def mixItemToJson(mixItem: MixItem): JsObject = Json.obj(
     "bevID" -> mixItem.beverageId,
@@ -23,7 +30,8 @@ object Content {
   private def mixItemsToJson(mixItems: Seq[MixItem]): Seq[JsObject] = mixItems.map(mixItemToJson)
 
   private def mixToJson(mix: UserMix, mixItems: Seq[MixItem]): JsObject = Json.obj(
-    "name" -> mix.name,
+    // Remove any non-ascii characters or any ascii control characters
+    "name" -> mix.name.map(filter),
     "mixItems" -> mixItemsToJson(mixItems)
   )
 
