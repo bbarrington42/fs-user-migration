@@ -92,8 +92,9 @@ object UserDAO {
     db.run(action)
   }
 
+  // Order by id descending to capture the most recently created users first.
   def getUsers(db: Database, page: Int): Future[Seq[User]] =
-    db.run(users.sortBy(_.id).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
+    db.run(users.sortBy(_.id.desc).drop(page * PAGE_SIZE).take(PAGE_SIZE).result)
 
   def getUserPrefs(db: Database, userId: Int): Future[(Seq[(UserMix, Seq[MixItem])], Seq[Int])] = for {
     mixes <- getUserMixes(db, userId)
