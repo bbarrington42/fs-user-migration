@@ -1,11 +1,11 @@
 package com.ccfs
 
 import java.io._
+import java.time.Instant
 
 import com.ccfs.Main._
 import com.ccfs.daos.UserDAO.{getUserPrefs, getUsers, _}
 import com.ccfs.util.Content._
-import org.joda.time.DateTime
 import scalaz.\/
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -58,7 +58,9 @@ object Extractor {
 
   def run(db: Database, dir: File): Unit = {
 
-    println(s"Starting at: ${DateTime.now()}")
+    val start = Instant.now()
+
+    println(s"Starting at: $start")
 
     def loop(page: Int = 0, index: Int = 1, acc: List[Array[String]] = List.empty): Unit = {
       getUsers(db, page).onComplete {
@@ -99,7 +101,12 @@ object Extractor {
     zip(dir, zipFile, _.endsWith(CSV))
     println(s"Your package at ${zipFile.getPath} is ready!")
 
-    println(s"Stopping at: ${DateTime.now()}")
+    val end = Instant.now()
+    println(s"Stopping at: ${end}")
+
+    val duration = java.time.Duration.between(start, end)
+
+    println(s"Elapsed time: ${duration.formatted("HH:MM:SS")}")
   }
 
 }
