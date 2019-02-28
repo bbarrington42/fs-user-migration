@@ -39,11 +39,11 @@ object Extractor {
 
       val lines = convert(batch)
 
-      println(s"${lines.length}/${users.length}")
-
       val (left, right) = lines.splitAt(PAGE_SIZE - acc.length)
 
       val curr = acc ++ left
+
+      println(s"${left.length}/${curr.length}")
 
       // If we have accumulated enough entries, write to file. Otherwise, return the current index and accumulator.
       if (curr.length < PAGE_SIZE) (index, curr)
