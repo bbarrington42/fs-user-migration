@@ -18,7 +18,7 @@ object Content {
 
   private def valid(ch: Char): Boolean = isAscii(ch) && !ch.isControl
 
-  private def filter(name: String): String = name.toList.filter(valid).mkString
+  private def filter(name: String): String = name.filter(valid)
 
 
   // Conversion to JSON

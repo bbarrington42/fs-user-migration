@@ -43,7 +43,7 @@ object Extractor {
 
       val curr = acc ++ left
 
-      println(s"${left.length}/${curr.length}")
+      println(s"${curr.length}/${users.length}")
 
       // If we have accumulated enough entries, write to file. Otherwise, return the current index and accumulator.
       if (curr.length < PAGE_SIZE) (index, curr)
@@ -57,13 +57,14 @@ object Extractor {
   }
 
   private def toHHMMSS(seconds: Long): String = {
-    def loop(rem: Long, acc: List[Long]): String = {
-      if (acc.length == 3) acc.map(l => f"$l%02d").mkString(":") else
-        loop(rem / 60, rem % 60 :: acc)
+    def loop(rem: Long, acc: List[Long], divs: List[Int]): String = divs match {
+      case Nil => (rem :: acc).map(l => f"$l%02d").mkString(":")
+      case h :: t => loop(rem / h, rem % h :: acc, t)
     }
 
-    loop(seconds, Nil)
+    loop(seconds, Nil, List(60, 60))
   }
+
 
   def run(db: Database, dir: File): Unit = {
 
@@ -115,7 +116,7 @@ object Extractor {
 
     val duration = java.time.Duration.between(start, end)
 
-    println(s"Elapsed time: ${toHHMMSS(duration.getSeconds)}")
+    println(s"Elapsed time (HH:MM:SS) = ${toHHMMSS(duration.getSeconds)}")
   }
 
 }
