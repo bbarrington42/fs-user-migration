@@ -56,6 +56,15 @@ object Extractor {
 
   }
 
+  private def toHHMMSS(seconds: Long): String = {
+    def loop(rem: Long, acc: List[Long]): String = {
+      if (acc.length == 3) acc.map(l => f"$l%02d").mkString(":") else
+        loop(rem / 60, rem % 60 :: acc)
+    }
+
+    loop(seconds, Nil)
+  }
+
   def run(db: Database, dir: File): Unit = {
 
     val start = Instant.now()
@@ -106,7 +115,7 @@ object Extractor {
 
     val duration = java.time.Duration.between(start, end)
 
-    println(s"Elapsed time: ${duration.formatted("HH:MM:SS")}")
+    println(s"Elapsed time: ${toHHMMSS(duration.getSeconds)}")
   }
 
 }
