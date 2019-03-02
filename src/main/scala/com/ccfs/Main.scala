@@ -2,7 +2,7 @@ package com.ccfs
 
 import java.io.File
 
-import Extractor._
+import com.ccfs.Extractor._
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 

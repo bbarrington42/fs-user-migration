@@ -14,11 +14,10 @@ import scala.collection.JavaConverters._
 
 object Content {
 
-  private def isAscii(ch: Char): Boolean = 0 <= ch.toInt && 127 >= ch.toInt
+  private def isPrintableAscii(b: Byte): Boolean = 31 < b && 127 > b
 
-  private def valid(ch: Char): Boolean = isAscii(ch) && !ch.isControl
-
-  private def filter(name: String): String = name.filter(valid)
+  private def filter(name: String): String =
+    new String(name.getBytes("utf-8").filter(isPrintableAscii), "utf-8")
 
 
   // Conversion to JSON
