@@ -76,7 +76,6 @@ object Extractor {
       getUsers(db, page).onComplete {
         case Success(users) =>
           // Pull the data for these users and write to file
-          println(s"processing ${users.length} users")
           process(db, users, acc, index, dir).fold(e => {
             println(s"Oooops: ${e.getClass.getName} - ${e.getMessage}")
             synchronized {

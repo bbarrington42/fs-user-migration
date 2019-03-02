@@ -4,6 +4,8 @@ assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShe
 
 assemblyJarName in assembly := "fs-user-migration"
 
+mainClass in Compile := Option("com.ccfs.Main")
+
 
 name := "fs-user-migration"
 
