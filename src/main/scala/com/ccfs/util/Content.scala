@@ -1,6 +1,7 @@
 package com.ccfs.util
 
 import java.io._
+import java.nio.charset.StandardCharsets
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import com.ccfs.Extractor.UserData
@@ -16,8 +17,9 @@ object Content {
 
   private def isPrintableAscii(b: Byte): Boolean = 31 < b && 127 > b
 
-  private def filter(name: String): String =
-    new String(name.getBytes("utf-8").filter(isPrintableAscii), "utf-8")
+  private def sanitize(name: String): String =
+    new String(name.getBytes(StandardCharsets.UTF_8).
+      filter(isPrintableAscii), StandardCharsets.UTF_8)
 
 
   // Conversion to JSON
@@ -29,8 +31,8 @@ object Content {
   private def mixItemsToJson(mixItems: Seq[MixItem]): Seq[JsObject] = mixItems.map(mixItemToJson)
 
   private def mixToJson(mix: UserMix, mixItems: Seq[MixItem]): JsObject = Json.obj(
-    // Remove any non-ascii characters or any ascii control characters
-    "name" -> mix.name.map(filter),
+    // Remove any non-printable ascii characters
+    "name" -> mix.name.map(sanitize),
     "mixItems" -> mixItemsToJson(mixItems)
   )
 
