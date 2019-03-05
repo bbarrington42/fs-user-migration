@@ -44,15 +44,26 @@ object Content {
     "mixes" -> mixesToJson(mixes)
   )
 
+  private def deDup(lines: List[Array[String]]): List[Array[String]] = lines match {
+    case Nil => Nil
+    case head :: tail => head :: deDup(tail.filterNot(_ == head))
+  }
+
   def writeToFile(lines: List[Array[String]], index: Int, parent: File): Unit = {
+
+    // Kludge - Remove any duplicates
+    val deduped = deDup(lines)
+
+    if(deduped.length != lines.length)
+      println(s"Duplicate(s) found: index=${index}!")
 
     // Create file to write to
     val file = new File(parent, f"${basename}_$index%03d.$CSV")
-    println(s"Writing ${lines.length} lines to ${file.getName}")
+    println(s"Writing ${deduped.length} lines to ${file.getName}")
 
     val csv = new CSVWriter(new FileWriter(file))
     try {
-      csv.writeAll(lines.asJava)
+      csv.writeAll(deduped.asJava)
     } finally {
       csv.close()
     }

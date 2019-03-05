@@ -23,6 +23,9 @@ object Extractor {
   private def process(db: Database, users: Seq[User], acc: List[Array[String]],
                       index: Int, dir: File): Throwable \/ (Int, List[Array[String]]) = \/.fromTryCatchNonFatal {
 
+    println(s"current index is ${index}")
+    println(s"acc contains ${acc.length} entries")
+
     // Terminate on empty user sequence
     if (users.isEmpty) {
       if (acc.nonEmpty)
@@ -39,14 +42,23 @@ object Extractor {
 
       val lines = convert(batch)
 
+      println(s"retrieved ${lines.length} new users")
+
+      assert(PAGE_SIZE >= acc.length, s"acc length: ${acc.length}!")
+
       val (left, right) = lines.splitAt(PAGE_SIZE - acc.length)
+
+      println(s"left: ${left.length}, right: ${right.length}")
 
       val curr = acc ++ left
 
       println(s"${curr.length}/${users.length}")
 
       // If we have accumulated enough entries, write to file. Otherwise, return the current index and accumulator.
-      if (curr.length < PAGE_SIZE) (index, curr)
+      if (curr.length < PAGE_SIZE) {
+        assert(right.length == 0, s"right.length = ${right.length}!")
+        (index, curr)
+      }
       else {
         writeToFile(curr, index, dir)
         // Return the next index and next accumulator.
@@ -83,7 +95,6 @@ object Extractor {
             }
           }, r => {
             val (newIndex, lines) = r
-            println(s"index: $newIndex, size of next batch: ${lines.length}")
             if (newIndex != -1) loop(page + 1, newIndex, lines) else synchronized {
               notify()
             }
