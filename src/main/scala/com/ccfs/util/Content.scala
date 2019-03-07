@@ -11,6 +11,7 @@ import com.ccfs.daos.UserDAO.{MixItem, UserMix}
 import com.opencsv.CSVWriter
 import play.api.libs.json.{JsObject, Json}
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 object Content {
@@ -44,15 +45,16 @@ object Content {
     "mixes" -> mixesToJson(mixes)
   )
 
-  private def deDup(lines: List[Array[String]]): List[Array[String]] = lines match {
-    case Nil => Nil
-    case head :: tail => head :: deDup(tail.filterNot(_ == head))
+  @tailrec
+  private def deDup(lines: List[Array[String]], acc: List[Array[String]]): List[Array[String]] = lines match {
+    case Nil => acc.reverse
+    case head :: tail => deDup(tail.filterNot(_ == head), head :: acc)
   }
 
   def writeToFile(lines: List[Array[String]], index: Int, parent: File): Unit = {
 
     // Kludge - Remove any duplicates
-    val deduped = deDup(lines)
+    val deduped = deDup(lines, Nil)
 
     if(deduped.length != lines.length)
       println(s"Duplicate(s) found: index=${index}!")
